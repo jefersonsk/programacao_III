@@ -1,6 +1,6 @@
 import leitor from 'readline-sync';
 
-let texto = leitor.question("Digite um valor: ");
+let texto = leitor.question("Digite um numero: ");
 console.log(texto);
 let valor = Number(texto);
 
