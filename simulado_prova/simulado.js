@@ -8,7 +8,37 @@ let escolha_opcao = 0;
 async function listarConsultas() {
     let consultas = await API.lerTodos();
     consultas.forEach(consulta => console.log(`ID: ${consulta.id} - Nome: ${consulta.paciente} - Idade: ${consulta.idade} - ID_Especialidade: ${consulta.id_especialidade}`));
-}
+};
+
+async function criarNovoRegistro() {
+    let listaEspecialidades = await API.listaEspecialidades();
+
+    while (true) {
+        let nome = await leitor.question('Digite o nome do paciente: ');
+        if (!nome) {
+            console.log('Nome digitado em branco.')
+            break
+        }
+        let idade = await leitor.question('Digite a idade do Paciente: ');
+        if (!Number.isInteger(idade) && idade < 0) {
+            console.log('Idade digitada não é válida.')
+            break
+        }
+
+        listaEspecialidades.forEach(especialidade => console.log(`ID: ${especialidade.id} - Nome Especialidade: ${especialidade.nome}`))
+        
+        let especialidade = await leitor.question('Digite a especialidade da consulta: ');
+
+        if (!listaEspecialidades.find((item) => item.id == especialidade)) {
+            console.log('Especialidade não encotrada!');
+            break;
+        };
+
+        await API.criar({"paciente": nome, "idade": idade, "id_especialidade": especialidade});
+        console.log('Consulta cadastrada.');
+        break;
+    };
+};
 
 async function buscarPorID() {
     let pesquisa_id = await leitor.question('Digite ID: ');
@@ -66,12 +96,14 @@ async function buscarNomeEspecialidade() {
 
 async function buscarPeloNomePaciente() {
     let consultas = await API.lerTodos();
-
     let nomePaciente = await leitor.question('Digite nome do paciente: ');
+    let pacienteEncontrado = consultas.filter(consulta => consulta.paciente.toUpperCase().startsWith(nomePaciente.toUpperCase()));
 
-    let pacienteEncontrado = consultas.filter(consulta => consulta.paciente.startsWith(nomePaciente));
-
-    console.log(pacienteEncontrado);
+    if (!pacienteEncontrado) {
+        console.log("Nenhum paciente encontrado com esse nome!");
+    } else {
+        pacienteEncontrado.forEach(consulta => console.log(`ID: ${consulta.id} - Nome: ${consulta.paciente} - Idade: ${consulta.idade} - ID_Especialiidade ${consulta.id_especialidade}`));
+    }
 };
 
 async function buscarMenoresIdade() {
@@ -84,7 +116,7 @@ async function buscarProblemas() {
     let consultas = await API.lerTodos();
     let consultaProblemas = consultas.filter((item) => item.id_especialidade === 101 && item.idade > 18 || item.id_especialidade == 105 && item.idade < 60);
     consultaProblemas.forEach(problema => console.log(`ID: ${problema.id} - Nome: ${problema.paciente} - Idade: ${problema.idade} - ID_Especialidade: ${problema.id_especialidade}`))
-}
+};
 
 while (escolha_opcao != 9) {
     console.log('>>> MENU DE OPÇÕES <<<');
@@ -103,6 +135,7 @@ while (escolha_opcao != 9) {
 
     switch (escolha_opcao) {
         case 1:
+            await criarNovoRegistro();
             break;
         case 2:
             await listarConsultas();
